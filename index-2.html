@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Qual é a sua relação com a tecnologia?</title>
+  <meta name="description" content="Responda a um quiz rápido e descubra o seu perfil tecnológico com base nos seus hábitos digitais." />
+  <meta name="theme-color" content="#060913" />
+  <style>
+/* =============================================================================
+   PERFIL TECH — estilos
+   -----------------------------------------------------------------------------
+   1. Tokens (cores, raios, fontes)
+   2. Base
+   3. Fundo decorativo
+   4. Componentes (botões, chips, tags)
+   5. Tela: abertura
+   6. Tela: perguntas
+   7. Tela: análise
+   8. Tela: resultado
+   9. Aviso (toast)
+   10. Animações
+   11. Responsivo e acessibilidade
+   ============================================================================= */
+
+
+/* 1. TOKENS ================================================================= */
+:root {
+  --bg: #060913;
+  --surface: rgba(255, 255, 255, 0.045);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.22);
+
+  --text: #eef2ff;
+  --muted: #9aa4c2;
+
+  --accent: #22d3ee;
+  --accent-2: #8b5cf6;
+  --grad: linear-gradient(135deg, #22d3ee 0%, #6366f1 55%, #a855f7 100%);
+
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+
+  --font: "Inter", "SF Pro Display", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+
+/* 2. BASE =================================================================== */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+button { font: inherit; color: inherit; }
+h1, h2, h3, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+/* Títulos recebem foco por código (leitores de tela); não precisam de contorno */
+[tabindex="-1"]:focus { outline: none; }
+
+.grad {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 680px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: max(24px, env(safe-area-inset-top)) 20px max(32px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.screen { width: 100%; animation: screen-in 0.6s var(--ease) backwards; }
+
+
+/* 3. FUNDO ================================================================== */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 700px at 85% -10%, rgba(99, 102, 241, 0.18), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(34, 211, 238, 0.12), transparent 60%),
+    var(--bg);
+}
+
+.bg__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.34;
+  animation: drift 22s ease-in-out infinite alternate;
+}
+.bg__orb--a { width: 420px; height: 420px; background: #6366f1; top: -130px; right: -90px; }
+.bg__orb--b { width: 360px; height: 360px; background: #22d3ee; bottom: -150px; left: -110px; animation-delay: -8s; }
+.bg__orb--c { width: 260px; height: 260px; background: #a855f7; top: 45%; left: 58%; opacity: 0.16; animation-delay: -14s; }
+
+.bg__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 15%, transparent 72%);
+  mask-image: radial-gradient(ellipse at center, #000 15%, transparent 72%);
+}
+
+
+/* 4. COMPONENTES ============================================================ */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.tag__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.5rem 0 2rem; }
+.chips li {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1.5rem;
+  font-weight: 650;
+  font-size: 1rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s, border-color 0.25s;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn--primary {
+  color: #05070f;
+  background: var(--grad);
+  box-shadow: 0 10px 34px -10px rgba(99, 102, 241, 0.8);
+}
+.btn--ghost {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+.btn--lg { padding: 1.05rem 2rem; font-size: 1.08rem; }
+
+@media (hover: hover) {
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -10px rgba(99, 102, 241, 0.95); }
+  .btn--ghost:hover { transform: translateY(-2px); background: var(--surface-hover); }
+}
+
+.icon-btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s var(--ease), opacity 0.2s;
+}
+.icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+@media (hover: hover) {
+  .icon-btn:not(:disabled):hover { background: var(--surface-hover); transform: translateX(-2px); }
+}
+
+
+/* 5. TELA: ABERTURA ========================================================= */
+.intro__title {
+  margin: 1.4rem 0 1rem;
+  font-size: clamp(2.1rem, 8vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+}
+.intro__lead {
+  max-width: 52ch;
+  font-size: clamp(1rem, 2.6vw, 1.12rem);
+  color: var(--muted);
+}
+
+.preview {
+  margin-top: 2.4rem;
+  padding: 1.2rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.preview__title {
+  margin-bottom: 0.9rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.preview__row { display: grid; gap: 0.35rem; margin-bottom: 0.85rem; font-size: 0.88rem; color: var(--muted); }
+.preview__row:last-child { margin-bottom: 0; }
+.preview__bar { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, 0.07); overflow: hidden; }
+.preview__bar i {
+  display: block;
+  height: 100%;
+  width: var(--w);
+  border-radius: inherit;
+  background: var(--grad);
+  transform-origin: left;
+  animation: grow 1.4s var(--ease) backwards;
+  animation-delay: calc(var(--d) + 500ms);
+}
+
+
+/* 6. TELA: PERGUNTAS ======================================================== */
+.quiz-top { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.9rem; }
+.progress-meta {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+#q-percent { color: var(--text); font-variant-numeric: tabular-nums; }
+
+.progress {
+  height: 8px;
+  margin-bottom: 1.4rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress__fill {
+  height: 100%;
+  width: 0;
+  background: var(--grad);
+  border-radius: inherit;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.7);
+  transition: width 0.7s var(--ease);
+}
+
+.q-card {
+  padding: clamp(1.25rem, 4vw, 2rem);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.025));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.q-topic {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.q-title {
+  margin: 0.6rem 0 1.5rem;
+  font-size: clamp(1.35rem, 4.8vw, 1.95rem);
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Transição entre perguntas (a direção vem do atributo data-dir) */
+.q-card.is-leaving { animation: leave-fwd 0.32s var(--ease) forwards; }
+.q-card.is-leaving[data-dir="back"] { animation-name: leave-back; }
+.q-card.is-entering { animation: enter-fwd 0.45s var(--ease) backwards; }
+.q-card.is-entering[data-dir="back"] { animation-name: enter-back; }
+
+.options { display: grid; gap: 0.75rem; }
+
+.option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  min-height: 62px;
+  padding: 0.95rem 1.1rem;
+  text-align: left;
+  font-size: 1.02rem;
+  line-height: 1.35;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: transform 0.28s var(--ease), border-color 0.25s, background 0.25s, box-shadow 0.25s, opacity 0.3s;
+  /* "backwards": aplica o estado inicial só durante o atraso, sem travar o hover depois */
+  animation: option-in 0.5s var(--ease) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms + 80ms);
+}
+
+.option__key {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.option__label { flex: 1; }
+.option__check {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: #05070f;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+  transition: background 0.25s, border-color 0.25s;
+}
+.option__check svg { opacity: 0; transform: scale(0.4); transition: opacity 0.2s, transform 0.3s var(--ease); }
+
+@media (hover: hover) {
+  .option:hover {
+    transform: translateY(-2px);
+    background: var(--surface-hover);
+    border-color: rgba(34, 211, 238, 0.55);
+    box-shadow: 0 12px 32px -14px rgba(34, 211, 238, 0.45);
+  }
+  .option:hover .option__key { color: var(--accent); border-color: rgba(34, 211, 238, 0.5); }
+}
+
+.option.is-selected {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.17), rgba(139, 92, 246, 0.17));
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 14px 40px -14px rgba(99, 102, 241, 0.8);
+  animation: pick 0.4s var(--ease);
+}
+.option.is-selected .option__key { color: #05070f; background: var(--accent); border-color: var(--accent); }
+.option.is-selected .option__check { background: var(--accent); border-color: var(--accent); }
+.option.is-selected .option__check svg { opacity: 1; transform: scale(1); }
+.option.is-dimmed { opacity: 0.4; }
+
+/* Evita cliques duplos enquanto a resposta é registrada */
+.options:has(.is-dimmed) { pointer-events: none; }
+
+.hint { display: none; margin-top: 1rem; text-align: center; font-size: 0.8rem; color: var(--muted); }
+.hint kbd {
+  padding: 0.1rem 0.45rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+@media (hover: hover) and (pointer: fine) { .hint { display: block; } }
+
+
+/* 7. TELA: ANÁLISE ========================================================== */
+.loading { display: grid; justify-items: center; gap: 1.4rem; text-align: center; }
+.loading__title { font-size: clamp(1.3rem, 4.5vw, 1.7rem); font-weight: 700; letter-spacing: -0.02em; }
+
+.scanner { position: relative; width: 150px; height: 150px; margin-top: 0.5rem; }
+.scanner__ring { position: absolute; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.07); animation: spin 1.3s linear infinite; }
+.scanner__ring--1 { inset: 0; border-top-color: var(--accent); }
+.scanner__ring--2 { inset: 16px; border-top-color: var(--accent-2); animation-duration: 1.9s; animation-direction: reverse; }
+.scanner__ring--3 { inset: 32px; border-top-color: #f472b6; animation-duration: 2.5s; }
+.scanner__core {
+  position: absolute;
+  inset: 54px;
+  border-radius: 50%;
+  background: var(--grad);
+  box-shadow: 0 0 44px rgba(99, 102, 241, 0.75);
+  animation: pulse-core 1.6s ease-in-out infinite;
+}
+
+.steps { display: grid; gap: 0.7rem; min-width: min(300px, 100%); text-align: left; }
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+  opacity: 0.35;
+  transition: opacity 0.4s, color 0.4s;
+}
+.steps li.is-active { opacity: 1; color: var(--text); }
+.steps li.is-done { opacity: 0.85; }
+.steps .tick {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: #05070f;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+  transition: background 0.3s, border-color 0.3s;
+}
+.steps .tick svg { opacity: 0; transform: scale(0.5); transition: opacity 0.2s, transform 0.3s var(--ease); }
+.steps li.is-done .tick { background: var(--accent); border-color: var(--accent); }
+.steps li.is-done .tick svg { opacity: 1; transform: scale(1); }
+
+.analysis-bar { width: min(300px, 100%); height: 4px; background: rgba(255, 255, 255, 0.08); border-radius: 99px; overflow: hidden; }
+.analysis-bar div { width: 0; height: 100%; background: var(--grad); border-radius: inherit; transition: width 0.9s var(--ease); }
+
+
+/* 8. TELA: RESULTADO ======================================================== */
+.hero {
+  padding: clamp(1.6rem, 5vw, 2.5rem) clamp(1.2rem, 4vw, 2rem);
+  text-align: center;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(99, 102, 241, 0.26), transparent 62%),
+    var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7);
+}
+.hero__badge {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 1.1rem;
+  font-size: 2.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.08), 0 0 50px rgba(99, 102, 241, 0.45);
+  animation: badge-in 0.9s var(--ease) backwards;
+}
+.hero__eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.hero__name {
+  margin: 0.4rem 0 0.5rem;
+  font-size: clamp(1.8rem, 7vw, 2.7rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero__tagline { font-size: 1.05rem; font-style: italic; color: var(--accent); }
+.hero__desc { max-width: 54ch; margin: 1.1rem auto 0; color: #c9d1ea; }
+.hero__secondary {
+  display: inline-block;
+  margin-top: 1.2rem;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.panel {
+  margin-top: 1rem;
+  padding: clamp(1.2rem, 4vw, 1.75rem);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.panel__title { margin-bottom: 1.2rem; font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; }
+
+/* Barras de categoria (apenas HTML/CSS) */
+.bar-row { margin-bottom: 1.05rem; }
+.bar-row:last-child { margin-bottom: 0; }
+.bar-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 0.4rem; font-size: 0.95rem; }
+.bar-label { display: inline-flex; align-items: center; gap: 0.55rem; }
+.bar-label::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--c2); box-shadow: 0 0 10px var(--c2); }
+.bar-pct { font-family: var(--mono); font-size: 0.88rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { height: 10px; background: rgba(255, 255, 255, 0.07); border-radius: 99px; overflow: hidden; }
+.bar__fill {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--c1), var(--c2));
+  border-radius: inherit;
+  box-shadow: 0 0 14px var(--c2);
+  transition: width 1.1s var(--ease);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+.bar-row.is-in .bar__fill { width: var(--w); }
+
+/* Afirmações personalizadas */
+.statements { display: grid; gap: 0.7rem; }
+.statements li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.95rem 1rem;
+  line-height: 1.5;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+  transition-delay: calc(var(--i, 0) * 120ms + 300ms);
+}
+.statements.is-in li { opacity: 1; transform: none; }
+.statements .spark { flex: none; margin-top: 0.15rem; color: var(--accent); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.3rem; }
+.actions .btn { flex: 1 1 220px; }
+
+.disclaimer { margin-top: 1.2rem; text-align: center; font-size: 0.78rem; color: var(--muted); }
+
+
+/* 9. AVISO (TOAST) ========================================================== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  z-index: 10;
+  max-width: calc(100% - 40px);
+  padding: 0.75rem 1.2rem;
+  font-size: 0.92rem;
+  color: var(--text);
+  background: rgba(15, 20, 40, 0.92);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  transform: translate(-50%, 16px);
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.4s var(--ease);
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+
+/* 10. ANIMAÇÕES ============================================================= */
+@keyframes screen-in   { from { opacity: 0; transform: translateY(16px); } }
+@keyframes option-in   { from { opacity: 0; transform: translateY(14px); } }
+@keyframes leave-fwd   { to   { opacity: 0; transform: translateX(-32px) scale(0.985); } }
+@keyframes enter-fwd   { from { opacity: 0; transform: translateX(32px) scale(0.985); } }
+@keyframes leave-back  { to   { opacity: 0; transform: translateX(32px) scale(0.985); } }
+@keyframes enter-back  { from { opacity: 0; transform: translateX(-32px) scale(0.985); } }
+@keyframes pick        { 0% { transform: scale(1); } 40% { transform: scale(0.97); } 100% { transform: scale(1.015); } }
+@keyframes spin        { to { transform: rotate(360deg); } }
+@keyframes pulse       { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes pulse-core  { 0%, 100% { transform: scale(0.9); opacity: 0.85; } 50% { transform: scale(1.08); opacity: 1; } }
+@keyframes drift       { to { transform: translate(40px, 30px) scale(1.12); } }
+@keyframes grow        { from { transform: scaleX(0); } }
+@keyframes badge-in    { from { opacity: 0; transform: scale(0.5) rotate(-12deg); } }
+
+
+/* 11. RESPONSIVO E ACESSIBILIDADE =========================================== */
+@media (max-width: 520px) {
+  .app { padding-left: 16px; padding-right: 16px; justify-content: flex-start; padding-top: max(20px, env(safe-area-inset-top)); }
+  .btn--lg { width: 100%; }
+  .option { padding: 0.9rem 0.95rem; font-size: 1rem; }
+  .actions .btn { flex-basis: 100%; }
+}
+
+@media (min-width: 900px) {
+  .app { max-width: 720px; }
+}
+
+/* Quem prefere menos movimento recebe o mesmo conteúdo, sem animações longas */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+  <!-- Fundo decorativo (não interativo) -->
+  <div class="bg" aria-hidden="true">
+    <span class="bg__orb bg__orb--a"></span>
+    <span class="bg__orb bg__orb--b"></span>
+    <span class="bg__orb bg__orb--c"></span>
+    <span class="bg__grid"></span>
+  </div>
+
+  <main class="app">
+
+    <!-- ======================================================
+         TELA 1 — Abertura
+         ====================================================== -->
+    <section id="screen-intro" class="screen" aria-labelledby="intro-title">
+      <span class="tag"><span class="tag__dot"></span>Teste de perfil · cerca de 3 min</span>
+
+      <h1 id="intro-title" class="intro__title" tabindex="-1">
+        Qual é a sua relação com a <span class="grad">tecnologia?</span>
+      </h1>
+
+      <p class="intro__lead">
+        Responda a algumas perguntas sobre o seu dia a dia digital e receba uma análise
+        personalizada, baseada exatamente nas suas escolhas.
+      </p>
+
+      <ul class="chips">
+        <li id="intro-count">Algumas perguntas</li>
+        <li>Sem cadastro</li>
+        <li>Resultado na hora</li>
+      </ul>
+
+      <button class="btn btn--primary btn--lg" id="btn-start" type="button">
+        Começar
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+
+      <!-- Prévia decorativa do resultado -->
+      <div class="preview" aria-hidden="true">
+        <p class="preview__title">Prévia do seu resultado</p>
+        <div class="preview__row"><span>Curiosidade tecnológica</span><div class="preview__bar"><i style="--w:86%; --d:0ms"></i></div></div>
+        <div class="preview__row"><span>Uso consciente</span><div class="preview__bar"><i style="--w:62%; --d:120ms"></i></div></div>
+        <div class="preview__row"><span>Perfil social</span><div class="preview__bar"><i style="--w:74%; --d:240ms"></i></div></div>
+      </div>
+    </section>
+
+    <!-- ======================================================
+         TELA 2 — Perguntas
+         ====================================================== -->
+    <section id="screen-quiz" class="screen" aria-label="Perguntas do quiz" hidden>
+      <div class="quiz-top">
+        <button class="icon-btn" id="btn-back" type="button" aria-label="Voltar para a pergunta anterior" disabled>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        </button>
+        <div class="progress-meta">
+          <span id="q-count">Pergunta 1</span>
+          <span id="q-percent">0%</span>
+        </div>
+      </div>
+
+      <div class="progress" id="progress" role="progressbar" aria-label="Progresso do quiz" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="progress__fill" id="progress-fill"></div>
+      </div>
+
+      <article class="q-card" id="q-card">
+        <p class="q-topic" id="q-topic"></p>
+        <h2 class="q-title" id="q-title" tabindex="-1"></h2>
+        <div class="options" id="q-options" role="group" aria-labelledby="q-title"></div>
+      </article>
+
+      <p class="hint">Dica: no computador, use as teclas <kbd>1</kbd> a <kbd>4</kbd> para responder.</p>
+    </section>
+
+    <!-- ======================================================
+         TELA 3 — Análise (carregamento)
+         ====================================================== -->
+    <section id="screen-loading" class="screen loading" aria-live="polite" hidden>
+      <div class="scanner" aria-hidden="true">
+        <span class="scanner__ring scanner__ring--1"></span>
+        <span class="scanner__ring scanner__ring--2"></span>
+        <span class="scanner__ring scanner__ring--3"></span>
+        <span class="scanner__core"></span>
+      </div>
+      <h2 class="loading__title">Analisando suas respostas…</h2>
+      <ul class="steps" id="analysis-steps"></ul>
+      <div class="analysis-bar" aria-hidden="true"><div id="analysis-fill"></div></div>
+    </section>
+
+    <!-- ======================================================
+         TELA 4 — Resultado
+         ====================================================== -->
+    <section id="screen-result" class="screen" aria-labelledby="result-name" hidden>
+      <header class="hero">
+        <div class="hero__badge" id="result-icon" aria-hidden="true"></div>
+        <p class="hero__eyebrow">Seu perfil tecnológico</p>
+        <h2 class="hero__name" id="result-name" tabindex="-1"></h2>
+        <p class="hero__tagline" id="result-tagline"></p>
+        <p class="hero__desc" id="result-desc"></p>
+        <p class="hero__secondary" id="result-secondary" hidden></p>
+      </header>
+
+      <section class="panel" aria-labelledby="bars-title">
+        <h3 class="panel__title" id="bars-title">Seu perfil</h3>
+        <div id="result-bars"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="statements-title">
+        <h3 class="panel__title" id="statements-title">O que isso diz sobre você</h3>
+        <ul class="statements" id="result-statements"></ul>
+      </section>
+
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-share" type="button">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></svg>
+          Compartilhar resultado
+        </button>
+        <button class="btn btn--ghost" id="btn-restart" type="button">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
+          Refazer o teste
+        </button>
+      </div>
+
+      <p class="disclaimer">
+        Este quiz é uma brincadeira baseada nas suas respostas e não substitui
+        nenhuma avaliação profissional.
+      </p>
+    </section>
+
+  </main>
+
+  <!-- Aviso rápido (ex.: "Resultado copiado") -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+/* =============================================================================
+   PERFIL TECH — Quiz sobre a sua relação com a tecnologia
+   Tudo roda no navegador: sem backend e sem bibliotecas externas.
+
+   ÍNDICE
+   1. Configurações gerais
+   2. DADOS EDITÁVEIS ► categorias, perguntas, perfis e afirmações
+   3. Motor do quiz (pontuação, escolha do perfil e das afirmações)
+   4. Interface (telas, perguntas, análise e resultado)
+   5. Compartilhamento
+   6. Inicialização
+
+   COMO EDITAR
+   • Perguntas: altere o array QUESTIONS. Cada alternativa tem "scores", com os
+     pontos (0 a 3 é uma boa escala) que ela soma em cada categoria.
+   • Porcentagens: o máximo possível de cada categoria é calculado
+     automaticamente a partir das perguntas, então você pode adicionar,
+     remover ou alterar perguntas sem refazer contas.
+   • Perfis: cada perfil tem "weights" (pesos por categoria). Peso negativo
+     significa "quanto MENOR a categoria, mais combina com este perfil".
+   • Afirmações: cada uma tem condições em "when" ([categoria, 'high' | 'low']).
+     Com mais de uma condição, a afirmação só aparece se todas forem verdadeiras.
+   ============================================================================= */
+
+'use strict';
+
+
+/* =============================================================================
+   1. CONFIGURAÇÕES GERAIS
+   ============================================================================= */
+const CONFIG = {
+  answerDelay: 560,        // ms entre clicar na resposta e começar a trocar de pergunta
+  transitionMs: 320,       // duração da animação de saída da pergunta (igual ao CSS)
+  analysisMs: 4200,        // duração total da tela "Analisando..."
+  maxStatements: 5,        // quantas afirmações mostrar, no máximo
+  minStatements: 3,        // se houver menos que isso, afrouxa os limites
+  comboBonus: 8,           // afirmações combinadas ganham prioridade extra
+  secondaryMinScore: 55,   // pontuação mínima para citar um "traço secundário"
+  // Limites para considerar uma categoria "alta" ou "baixa" (tentados em ordem)
+  thresholds: [
+    { high: 60, low: 40 },
+    { high: 52, low: 48 },
+  ],
+  shareTitle: 'Meu perfil tecnológico',
+};
+
+
+/* =============================================================================
+   2. DADOS EDITÁVEIS
+   ============================================================================= */
+
+/* ---- 2.1 Categorias internas (o usuário não vê os pontos durante o quiz) ---- */
+const CATEGORIES = [
+  { id: 'dependencia', label: 'Dependência digital',         colors: ['#fb923c', '#ef4444'] },
+  { id: 'curiosidade', label: 'Curiosidade tecnológica',     colors: ['#22d3ee', '#3b82f6'] },
+  { id: 'consciente',  label: 'Uso consciente',              colors: ['#34d399', '#10b981'] },
+  { id: 'gamer',       label: 'Perfil gamer',                colors: ['#a78bfa', '#7c3aed'] },
+  { id: 'social',      label: 'Perfil social',               colors: ['#f472b6', '#ec4899'] },
+  { id: 'produtivo',   label: 'Perfil produtivo',            colors: ['#fbbf24', '#f59e0b'] },
+  { id: 'adocao',      label: 'Adoção de novas tecnologias', colors: ['#38bdf8', '#6366f1'] },
+  { id: 'privacidade', label: 'Privacidade digital',         colors: ['#2dd4bf', '#0d9488'] },
+];
+
+/* ---- 2.2 Perguntas ---------------------------------------------------------
+   topic   → rótulo pequeno acima da pergunta
+   text    → enunciado
+   options → de 2 a 4 alternativas, cada uma com "scores" por categoria        */
+const QUESTIONS = [
+  {
+    topic: 'Tempo de tela',
+    text: 'Quanto tempo você passa utilizando o celular por dia?',
+    options: [
+      { text: 'Menos de 2 horas', scores: { consciente: 3 } },
+      { text: '2–4 horas',        scores: { consciente: 2, dependencia: 1 } },
+      { text: '4–8 horas',        scores: { dependencia: 2, consciente: 1 } },
+      { text: 'Mais de 8 horas',  scores: { dependencia: 3 } },
+    ],
+  },
+  {
+    topic: 'Dependência de tecnologia',
+    text: 'O que você faria se ficasse um dia inteiro sem internet?',
+    options: [
+      { text: 'Aproveitaria para fazer outras coisas',          scores: { consciente: 3 } },
+      { text: 'Ficaria bastante incomodado',                    scores: { dependencia: 1, consciente: 1 } },
+      { text: 'Tentaria encontrar uma conexão imediatamente',   scores: { dependencia: 2, produtivo: 1 } },
+      { text: 'Entraria em desespero',                          scores: { dependencia: 3 } },
+    ],
+  },
+  {
+    topic: 'Novas tecnologias',
+    text: 'Quando surge uma nova tecnologia, você…',
+    options: [
+      { text: 'Ignora completamente',                 scores: {} },
+      { text: 'Espera outras pessoas testarem',       scores: { adocao: 1, privacidade: 1 } },
+      { text: 'Fica curioso e pesquisa sobre ela',    scores: { curiosidade: 2, adocao: 2, consciente: 1 } },
+      { text: 'Precisa experimentar imediatamente',   scores: { curiosidade: 3, adocao: 3 } },
+    ],
+  },
+  {
+    topic: 'Finalidade',
+    text: 'Para qual finalidade você mais utiliza a tecnologia?',
+    options: [
+      { text: 'Estudos',                 scores: { produtivo: 2, curiosidade: 1, consciente: 1 } },
+      { text: 'Trabalho',                scores: { produtivo: 3 } },
+      { text: 'Jogos e entretenimento',  scores: { gamer: 3, dependencia: 1 } },
+      { text: 'Redes sociais',           scores: { social: 3, dependencia: 1 } },
+    ],
+  },
+  {
+    topic: 'Redes sociais',
+    text: 'Como é a sua relação com as redes sociais?',
+    options: [
+      { text: 'Quase não uso',                                    scores: { consciente: 2, privacidade: 1 } },
+      { text: 'Acompanho, mas raramente publico algo',            scores: { social: 1, consciente: 1 } },
+      { text: 'Publico e interajo com frequência',                scores: { social: 3, dependencia: 1 } },
+      { text: 'Estou sempre conferindo curtidas e notificações',  scores: { social: 2, dependencia: 3 } },
+    ],
+  },
+  {
+    topic: 'Inteligência artificial',
+    text: 'E a inteligência artificial no seu dia a dia?',
+    options: [
+      { text: 'Prefiro evitar',                                    scores: { privacidade: 2 } },
+      { text: 'Uso de vez em quando, se precisar',                 scores: { adocao: 1, consciente: 1, produtivo: 1 } },
+      { text: 'Uso bastante para estudar, trabalhar ou criar',     scores: { adocao: 2, produtivo: 3, curiosidade: 1 } },
+      { text: 'Testo toda IA nova que aparece',                    scores: { adocao: 3, curiosidade: 3 } },
+    ],
+  },
+  {
+    topic: 'Jogos',
+    text: 'Qual é o lugar dos jogos na sua rotina?',
+    options: [
+      { text: 'Praticamente não jogo',                              scores: {} },
+      { text: 'Jogo de vez em quando para relaxar',                 scores: { gamer: 1, consciente: 1 } },
+      { text: 'Jogo com frequência e acompanho o universo gamer',   scores: { gamer: 2, social: 1, curiosidade: 1 } },
+      { text: 'Jogos são um dos meus principais hobbies',           scores: { gamer: 3, dependencia: 1 } },
+    ],
+  },
+  {
+    topic: 'Privacidade',
+    text: 'Ao instalar um aplicativo novo, o que você faz com as permissões?',
+    options: [
+      { text: 'Aceito tudo sem ler',                                         scores: {} },
+      { text: 'Dou uma olhada rápida',                                       scores: { privacidade: 1 } },
+      { text: 'Nego o que parece desnecessário',                             scores: { privacidade: 2, consciente: 1 } },
+      { text: 'Reviso as permissões e ajusto as configurações de privacidade', scores: { privacidade: 3, consciente: 1 } },
+    ],
+  },
+  {
+    topic: 'Uso do celular',
+    text: 'Qual é a primeira coisa que você faz ao acordar?',
+    options: [
+      { text: 'Levanto e só pego o celular mais tarde',         scores: { consciente: 3 } },
+      { text: 'Desligo o alarme e largo o celular',             scores: { consciente: 2, dependencia: 1 } },
+      { text: 'Confiro mensagens e notificações',               scores: { dependencia: 2, social: 2 } },
+      { text: 'Abro as redes sociais e fico rolando o feed',    scores: { dependencia: 3, social: 2 } },
+    ],
+  },
+  {
+    topic: 'Estudos e trabalho',
+    text: 'Como a tecnologia entra na sua organização e produtividade?',
+    options: [
+      { text: 'Uso o básico; prefiro métodos tradicionais',               scores: {} },
+      { text: 'Tenho alguns aplicativos de agenda e anotações',           scores: { produtivo: 2 } },
+      { text: 'Tenho um sistema organizado de apps e automações',         scores: { produtivo: 3, adocao: 1 } },
+      { text: 'Estou sempre testando ferramentas novas para ganhar tempo', scores: { produtivo: 2, curiosidade: 2, adocao: 2 } },
+    ],
+  },
+  {
+    topic: 'Entretenimento digital',
+    text: 'Numa noite livre, o que você mais provavelmente faz?',
+    options: [
+      { text: 'Maratono séries ou vídeos',          scores: { dependencia: 2 } },
+      { text: 'Jogo online',                        scores: { gamer: 3, social: 1 } },
+      { text: 'Converso e navego pelas redes',      scores: { social: 3, dependencia: 1 } },
+      { text: 'Faço algo longe das telas',          scores: { consciente: 3 } },
+    ],
+  },
+  {
+    topic: 'Notificações',
+    text: 'Como estão as notificações do seu celular?',
+    options: [
+      { text: 'Quase todas desativadas',                scores: { consciente: 3, privacidade: 1 } },
+      { text: 'Só as importantes ficam ligadas',        scores: { consciente: 2, produtivo: 1 } },
+      { text: 'A maioria está ligada',                  scores: { dependencia: 1, social: 1 } },
+      { text: 'Tudo ligado, e eu respondo na hora',     scores: { dependencia: 3, social: 2 } },
+    ],
+  },
+  {
+    topic: 'Internet',
+    text: 'Quando precisa descobrir algo, qual é o seu primeiro movimento?',
+    options: [
+      { text: 'Pesquiso em várias fontes e comparo',            scores: { curiosidade: 2, consciente: 2, privacidade: 1 } },
+      { text: 'Pergunto a uma inteligência artificial',         scores: { adocao: 2, produtivo: 1 } },
+      { text: 'Procuro vídeos e posts nas redes sociais',       scores: { social: 2, dependencia: 1 } },
+      { text: 'Pergunto a alguém',                              scores: { social: 1 } },
+    ],
+  },
+  {
+    topic: 'Vida real',
+    text: 'Em uma refeição com amigos ou família, onde fica o seu celular?',
+    options: [
+      { text: 'Guardado, longe da mesa',                              scores: { consciente: 3 } },
+      { text: 'Virado para baixo, ao lado do prato',                  scores: { consciente: 2, dependencia: 1 } },
+      { text: 'Na mão — dou uma olhada de vez em quando',             scores: { dependencia: 2, social: 1 } },
+      { text: 'Alterno entre a conversa e a tela o tempo todo',       scores: { dependencia: 3, social: 2 } },
+    ],
+  },
+];
+
+/* ---- 2.3 Perfis finais -------------------------------------------------------
+   weights: importância de cada categoria para este perfil.
+            Positivo → combina com categoria ALTA. Negativo → combina com BAIXA.
+   Em caso de empate, vence o perfil que aparece primeiro nesta lista.           */
+const PROFILES = [
+  {
+    id: 'explorador',
+    icon: '🚀',
+    name: 'O Explorador Digital',
+    tagline: 'Sempre um passo à frente das novidades.',
+    description:
+      'Você provavelmente é uma pessoa bastante curiosa quando o assunto é tecnologia. ' +
+      'Novas ferramentas, aplicativos e tendências costumam chamar sua atenção rapidamente — ' +
+      'e você gosta de entender como as coisas funcionam enquanto as usa.',
+    weights: { curiosidade: 1.2, adocao: 1.2, produtivo: 0.2 },
+  },
+  {
+    id: 'equilibrio',
+    icon: '⚖️',
+    name: 'O Mestre do Equilíbrio',
+    tagline: 'Conectado, mas no controle.',
+    description:
+      'Você utiliza bastante tecnologia, mas parece conseguir manter um equilíbrio saudável ' +
+      'entre o mundo digital e o mundo real. As telas fazem parte da sua rotina sem tomar ' +
+      'o lugar do que acontece fora delas.',
+    weights: { consciente: 1.5, dependencia: -1.0, privacidade: 0.4 },
+  },
+  {
+    id: 'dependente',
+    icon: '📱',
+    name: 'O Dependente Digital',
+    tagline: 'O digital está sempre no seu radar.',
+    description:
+      'Seu resultado indica que a tecnologia ocupa uma parte muito grande da sua rotina. ' +
+      'Seu celular e a internet provavelmente estão entre as primeiras coisas que você procura ' +
+      'durante o dia. Isso não é um problema em si, mas vale observar quem está no comando: você ou o hábito.',
+    weights: { dependencia: 1.6, social: 0.5, consciente: -0.6 },
+  },
+  {
+    id: 'gamer',
+    icon: '🎮',
+    name: 'O Gamer Tecnológico',
+    tagline: 'Aqui, tecnologia é diversão.',
+    description:
+      'Jogos e entretenimento digital parecem ter uma presença importante na sua relação com a ' +
+      'tecnologia. Você provavelmente gosta de desafios, de evoluir e de explorar tudo o que o ' +
+      'seu equipamento pode oferecer.',
+    weights: { gamer: 1.6, social: 0.3, dependencia: 0.2 },
+  },
+  {
+    id: 'social',
+    icon: '💬',
+    name: 'O Conector Social',
+    tagline: 'Para você, tecnologia é gente.',
+    description:
+      'Para você, a tecnologia é principalmente uma ponte entre pessoas. Mensagens, redes e ' +
+      'comunidades ocupam boa parte do seu tempo digital, e é por elas que você descobre, ' +
+      'compartilha e se mantém por dentro de tudo.',
+    weights: { social: 1.5, dependencia: 0.3 },
+  },
+  {
+    id: 'produtivo',
+    icon: '⚡',
+    name: 'O Estrategista Produtivo',
+    tagline: 'Tecnologia como alavanca.',
+    description:
+      'Você enxerga a tecnologia como uma aliada para estudar, trabalhar e render mais. ' +
+      'Aplicativos, automações e ferramentas fazem parte do seu método — e você costuma ' +
+      'escolhê-los com um objetivo claro em mente.',
+    weights: { produtivo: 1.5, adocao: 0.4, consciente: 0.4 },
+  },
+  {
+    id: 'guardiao',
+    icon: '🛡️',
+    name: 'O Guardião Digital',
+    tagline: 'Usa a tecnologia com os olhos abertos.',
+    description:
+      'Você parece ter uma atenção especial com os seus dados e com o que entrega aos ' +
+      'aplicativos. Usa a tecnologia sem ingenuidade: pergunta quem vê o quê, ajusta ' +
+      'permissões e prefere decidir por conta própria o que compartilhar.',
+    weights: { privacidade: 1.6, consciente: 0.5 },
+  },
+];
+
+/* ---- 2.4 Afirmações personalizadas -------------------------------------------
+   when: lista de condições [categoria, 'high' | 'low'].
+   Com mais de uma condição (combinação), todas precisam ser verdadeiras.
+   O sistema escolhe automaticamente as mais relevantes para cada resultado.     */
+const STATEMENTS = [
+  /* — Combinações (mais específicas, têm prioridade) — */
+  { when: [['gamer', 'high'], ['social', 'high']],
+    text: 'Você gosta de jogar e de dividir a experiência: para você, tecnologia também é um jeito de estar com os outros.' },
+  { when: [['gamer', 'high'], ['dependencia', 'high']],
+    text: 'Entre uma partida e outra, é fácil perder a noção do tempo — vale combinar pausas com você mesmo.' },
+  { when: [['curiosidade', 'high'], ['produtivo', 'high']],
+    text: 'Você une curiosidade e foco: costuma testar ferramentas novas para realmente ganhar tempo.' },
+  { when: [['dependencia', 'high'], ['social', 'high']],
+    text: 'Estar conectado é, para você, também estar presente na vida das pessoas — e isso pesa bastante na sua rotina.' },
+  { when: [['privacidade', 'high'], ['adocao', 'high']],
+    text: 'Você adota novidades rápido, mas sem baixar a guarda quando o assunto é privacidade.' },
+  { when: [['consciente', 'high'], ['produtivo', 'high']],
+    text: 'Você usa a tecnologia com intenção: ela trabalha a seu favor, e não o contrário.' },
+  { when: [['privacidade', 'low'], ['social', 'high']],
+    text: 'Você compartilha bastante online; vale revisar de tempos em tempos quem consegue ver o que você publica.' },
+
+  /* — Dependência digital — */
+  { when: [['dependencia', 'high']],
+    text: 'Você provavelmente sente falta do celular quando fica muito tempo longe dele.' },
+  { when: [['dependencia', 'low']],
+    text: 'Você consegue ficar longe das telas sem grande esforço: o digital não manda na sua rotina.' },
+
+  /* — Curiosidade tecnológica — */
+  { when: [['curiosidade', 'high']],
+    text: 'Você tende a experimentar novas tecnologias antes da maioria das pessoas.' },
+  { when: [['curiosidade', 'low']],
+    text: 'Você prefere ferramentas já conhecidas a se aventurar em novidades — e isso poupa bastante tempo e paciência.' },
+
+  /* — Perfil gamer — */
+  { when: [['gamer', 'high']],
+    text: 'Para você, tecnologia e entretenimento praticamente andam juntos.' },
+  { when: [['gamer', 'low']],
+    text: 'Os jogos ocupam pouco espaço no seu tempo digital; você usa a tecnologia para outras coisas.' },
+
+  /* — Uso consciente — */
+  { when: [['consciente', 'high']],
+    text: 'Você parece ter uma relação relativamente equilibrada com a tecnologia.' },
+  { when: [['consciente', 'low']],
+    text: 'Às vezes o tempo de tela passa sem você perceber — observar esse hábito pode fazer diferença.' },
+
+  /* — Perfil social — */
+  { when: [['social', 'high']],
+    text: 'Grande parte da sua experiência digital acontece através da interação com outras pessoas.' },
+  { when: [['social', 'low']],
+    text: 'Você usa a tecnologia mais como ferramenta pessoal do que como palco social.' },
+
+  /* — Perfil produtivo — */
+  { when: [['produtivo', 'high']],
+    text: 'Você transforma a tecnologia em aliada para estudar, trabalhar e ganhar tempo.' },
+  { when: [['produtivo', 'low']],
+    text: 'Você usa pouco a tecnologia como ferramenta de organização; há bastante espaço para ela facilitar a sua rotina.' },
+
+  /* — Adoção de novas tecnologias — */
+  { when: [['adocao', 'high']],
+    text: 'Quando uma ferramenta nova promete facilitar a vida, você costuma adotá-la rápido.' },
+  { when: [['adocao', 'low']],
+    text: 'Você só adota uma tecnologia nova depois de ter bastante certeza de que ela vale a pena.' },
+
+  /* — Privacidade digital — */
+  { when: [['privacidade', 'high']],
+    text: 'Você pensa duas vezes antes de entregar os seus dados a um aplicativo.' },
+  { when: [['privacidade', 'low']],
+    text: 'Você costuma aceitar permissões sem pensar muito; seus dados talvez estejam mais expostos do que imagina.' },
+];
+
+/* Usada só se o perfil for tão "equilibrado" que nenhuma afirmação for relevante */
+const FALLBACK_STATEMENT = {
+  when: [],
+  text: 'Seu perfil é bem distribuído: você transita entre diferentes jeitos de usar tecnologia sem se prender a um único padrão.',
+};
+
+/* ---- 2.5 Textos da tela de análise ---- */
+const ANALYSIS_STEPS = [
+  'Lendo as suas respostas',
+  'Cruzando seus hábitos digitais',
+  'Calculando as suas categorias',
+  'Montando o seu perfil',
+];
+
+
+/* =============================================================================
+   3. MOTOR DO QUIZ
+   Funções puras: o mesmo conjunto de respostas sempre gera o mesmo resultado.
+   ============================================================================= */
+
+/* Pontuação máxima possível de cada categoria (calculada a partir das perguntas) */
+const MAX_SCORES = Object.fromEntries(
+  CATEGORIES.map((cat) => [
+    cat.id,
+    QUESTIONS.reduce(
+      (sum, q) => sum + Math.max(0, ...q.options.map((o) => o.scores[cat.id] || 0)),
+      0
+    ),
+  ])
+);
+
+/* Avisa no console se algum dado editável tiver um erro de digitação */
+function validateData() {
+  const ids = new Set(CATEGORIES.map((c) => c.id));
+  const check = (cat, where) => {
+    if (!ids.has(cat)) console.warn(`[Quiz] Categoria desconhecida "${cat}" em ${where}.`);
+  };
+  QUESTIONS.forEach((q, i) => {
+    if (q.options.length < 2 || q.options.length > 4) {
+      console.warn(`[Quiz] A pergunta ${i + 1} deveria ter de 2 a 4 alternativas.`);
+    }
+    q.options.forEach((o) => Object.keys(o.scores).forEach((c) => check(c, `pergunta ${i + 1}`)));
+  });
+  PROFILES.forEach((p) => Object.keys(p.weights).forEach((c) => check(c, `perfil ${p.id}`)));
+  STATEMENTS.forEach((s) => s.when.forEach(([c]) => check(c, 'afirmações')));
+}
+
+/* Soma os pontos das respostas e converte cada categoria em porcentagem (0–100) */
+function computePercentages(answers) {
+  const raw = Object.fromEntries(CATEGORIES.map((c) => [c.id, 0]));
+
+  QUESTIONS.forEach((q, qi) => {
+    const chosen = q.options[answers[qi]];
+    if (!chosen) return;
+    for (const cat of CATEGORIES) raw[cat.id] += chosen.scores[cat.id] || 0;
+  });
+
+  return Object.fromEntries(
+    CATEGORIES.map((c) => [
+      c.id,
+      MAX_SCORES[c.id] > 0 ? Math.round((raw[c.id] / MAX_SCORES[c.id]) * 100) : 0,
+    ])
+  );
+}
+
+/* Quanto um perfil combina com as porcentagens (0–100) */
+function profileScore(profile, pcts) {
+  let total = 0;
+  let norm = 0;
+  for (const [cat, weight] of Object.entries(profile.weights)) {
+    const value = weight >= 0 ? pcts[cat] : 100 - pcts[cat];
+    total += Math.abs(weight) * value;
+    norm += Math.abs(weight);
+  }
+  return total / norm;
+}
+
+/* Ordena os perfis do mais ao menos compatível (empates: ordem da lista) */
+function rankProfiles(pcts) {
+  return PROFILES
+    .map((profile, order) => ({ profile, order, score: profileScore(profile, pcts) }))
+    .sort((a, b) => b.score - a.score || a.order - b.order);
+}
+
+/* Força da condição: devolve um valor de 0–100 se ela é verdadeira, ou null */
+function conditionStrength([cat, level], pcts, limits) {
+  const value = pcts[cat];
+  if (level === 'high') return value >= limits.high ? value : null;
+  return value <= limits.low ? 100 - value : null;
+}
+
+/* Escolhe automaticamente as afirmações mais relevantes para as porcentagens */
+function pickStatements(pcts) {
+  let chosen = [];
+
+  for (const limits of CONFIG.thresholds) {
+    // 1) Quais afirmações são verdadeiras e quão relevantes elas são?
+    const candidates = [];
+    STATEMENTS.forEach((statement, order) => {
+      const strengths = statement.when.map((cond) => conditionStrength(cond, pcts, limits));
+      if (strengths.some((s) => s === null)) return;
+
+      let relevance = strengths.reduce((a, b) => a + b, 0) / strengths.length;
+      if (statement.when.length > 1) relevance += CONFIG.comboBonus;
+      candidates.push({ statement, relevance, order });
+    });
+    candidates.sort((a, b) => b.relevance - a.relevance || a.order - b.order);
+
+    // 2) Pega as melhores, evitando repetir categorias já cobertas
+    chosen = [];
+    const used = new Set();
+    for (const { statement } of candidates) {
+      const cats = statement.when.map(([cat]) => cat);
+      if (cats.every((cat) => used.has(cat))) continue;
+      chosen.push(statement);
+      cats.forEach((cat) => used.add(cat));
+      if (chosen.length >= CONFIG.maxStatements) break;
+    }
+    if (chosen.length >= CONFIG.minStatements) break;
+  }
+
+  if (chosen.length < CONFIG.minStatements) chosen.push(FALLBACK_STATEMENT);
+  return chosen.map((s) => s.text);
+}
+
+/* Resultado completo a partir da lista de respostas (índice da alternativa por pergunta) */
+function computeResult(answers) {
+  const pcts = computePercentages(answers);
+  const ranking = rankProfiles(pcts);
+  const second = ranking[1];
+
+  const categories = CATEGORIES
+    .map((cat, order) => ({ ...cat, order, pct: pcts[cat.id] }))
+    .sort((a, b) => b.pct - a.pct || a.order - b.order);
+
+  return {
+    pcts,
+    categories,
+    profile: ranking[0].profile,
+    secondary: second.score >= CONFIG.secondaryMinScore ? second.profile : null,
+    statements: pickStatements(pcts),
+  };
+}
+
+
+/* =============================================================================
+   4. INTERFACE
+   ============================================================================= */
+const REDUCED_MOTION =
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const ICONS = {
+  check: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  spark: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.3L21 10l-6.8 1.7L12 18l-2.2-6.3L3 10l6.8-1.7z"/></svg>',
+};
+
+const state = {
+  index: 0,        // pergunta atual
+  answers: [],     // índice da alternativa escolhida em cada pergunta
+  locked: false,   // true enquanto uma resposta/transição está em andamento
+  result: null,
+};
+
+let els = {};      // referências do DOM (preenchidas em init)
+let toastTimer = null;
+
+/* Pausa assíncrona (mais curta para quem prefere menos movimento) */
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, REDUCED_MOTION ? Math.min(ms, 120) : ms));
+
+/* ---- Telas ---- */
+function showScreen(name) {
+  for (const [key, el] of Object.entries(els.screens)) el.hidden = key !== name;
+  window.scrollTo(0, 0);
+}
+
+/* ---- Perguntas ---- */
+function startQuiz() {
+  state.index = 0;
+  state.answers = [];
+  state.locked = false;
+  state.result = null;
+
+  els.card.classList.remove('is-leaving', 'is-entering');
+  showScreen('quiz');
+  renderQuestion();
+  els.title.focus({ preventScroll: true });
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[state.index];
+  const total = QUESTIONS.length;
+  const pct = Math.round(((state.index + 1) / total) * 100);
+
+  els.count.textContent = `Pergunta ${state.index + 1} de ${total}`;
+  els.percent.textContent = `${pct}%`;
+  els.progressFill.style.width = `${pct}%`;
+  els.progress.setAttribute('aria-valuenow', String(pct));
+  els.back.disabled = state.index === 0;
+
+  els.topic.textContent = q.topic;
+  els.title.textContent = q.text;
+  els.options.replaceChildren(...q.options.map((option, i) => buildOption(option, i)));
+}
+
+function buildOption(option, i) {
+  const selected = state.answers[state.index] === i;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'option' + (selected ? ' is-selected' : '');
+  btn.style.setProperty('--i', i);
+  btn.setAttribute('aria-pressed', String(selected));
+
+  const key = document.createElement('span');
+  key.className = 'option__key';
+  key.textContent = String(i + 1);
+
+  const label = document.createElement('span');
+  label.className = 'option__label';
+  label.textContent = option.text;
+
+  const check = document.createElement('span');
+  check.className = 'option__check';
+  check.innerHTML = ICONS.check;
+
+  btn.append(key, label, check);
+  btn.addEventListener('click', () => selectOption(i));
+  return btn;
+}
+
+async function selectOption(i) {
+  if (state.locked) return;
+  state.locked = true;
+  state.answers[state.index] = i;
+
+  // Destaca a escolhida e esmaece as outras
+  [...els.options.children].forEach((btn, k) => {
+    btn.classList.toggle('is-selected', k === i);
+    btn.classList.toggle('is-dimmed', k !== i);
+    btn.setAttribute('aria-pressed', String(k === i));
+  });
+
+  await wait(CONFIG.answerDelay);
+
+  if (state.index < QUESTIONS.length - 1) {
+    await goToQuestion(state.index + 1, 'forward');
+  } else {
+    await finishQuiz();
+  }
+}
+
+/* Troca de pergunta com animação de saída e de entrada */
+async function goToQuestion(newIndex, direction) {
+  state.locked = true;
+
+  els.card.dataset.dir = direction;
+  els.card.classList.remove('is-entering');
+  els.card.classList.add('is-leaving');
+  await wait(CONFIG.transitionMs);
+
+  state.index = newIndex;
+  renderQuestion();
+
+  els.card.classList.remove('is-leaving');
+  void els.card.offsetWidth; // força o navegador a reiniciar a animação de entrada
+  els.card.classList.add('is-entering');
+  els.title.focus({ preventScroll: true });
+
+  state.locked = false;
+}
+
+function goBack() {
+  if (state.locked || state.index === 0) return;
+  goToQuestion(state.index - 1, 'back');
+}
+
+/* Atalhos de teclado: 1–4 escolhem a alternativa correspondente */
+function handleKeydown(event) {
+  if (els.screens.quiz.hidden || state.locked) return;
+  if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+  const n = Number(event.key);
+  if (Number.isInteger(n) && n >= 1 && n <= els.options.children.length) {
+    event.preventDefault();
+    selectOption(n - 1);
+  }
+}
+
+/* ---- Análise (tela de carregamento) ---- */
+async function runAnalysis() {
+  els.steps.replaceChildren(
+    ...ANALYSIS_STEPS.map((text) => {
+      const li = document.createElement('li');
+      const tick = document.createElement('span');
+      tick.className = 'tick';
+      tick.innerHTML = ICONS.check;
+      const label = document.createElement('span');
+      label.textContent = text;
+      li.append(tick, label);
+      return li;
+    })
+  );
+  els.analysisFill.style.width = '0%';
+
+  const items = [...els.steps.children];
+  const perStep = CONFIG.analysisMs / items.length;
+
+  for (let i = 0; i < items.length; i++) {
+    items[i].classList.add('is-active');
+    els.analysisFill.style.width = `${((i + 1) / items.length) * 100}%`;
+    await wait(perStep);
+    items[i].classList.remove('is-active');
+    items[i].classList.add('is-done');
+  }
+  await wait(250);
+}
+
+async function finishQuiz() {
+  // O resultado é calculado antes da animação: depende apenas das respostas
+  state.result = computeResult(state.answers);
+
+  showScreen('loading');
+  await runAnalysis();
+
+  renderResult(state.result);
+  showScreen('result');
+  els.resultName.focus({ preventScroll: true });
+  animateResult();
+  state.locked = false;
+}
+
+/* ---- Resultado ---- */
+function renderResult(result) {
+  const { profile, secondary, categories, statements } = result;
+
+  els.resultIcon.textContent = profile.icon;
+  els.resultName.textContent = profile.name;
+  els.resultTagline.textContent = profile.tagline;
+  els.resultDesc.textContent = profile.description;
+
+  els.resultSecondary.hidden = !secondary;
+  if (secondary) els.resultSecondary.textContent = `Traço secundário: ${secondary.name}`;
+
+  els.bars.replaceChildren(...categories.map((cat, i) => buildBarRow(cat, i)));
+
+  els.statements.classList.remove('is-in');
+  els.statements.replaceChildren(
+    ...statements.map((text, i) => {
+      const li = document.createElement('li');
+      li.style.setProperty('--i', i);
+      const spark = document.createElement('span');
+      spark.className = 'spark';
+      spark.innerHTML = ICONS.spark;
+      const p = document.createElement('p');
+      p.textContent = text;
+      li.append(spark, p);
+      return li;
+    })
+  );
+}
+
+function buildBarRow(cat, i) {
+  const row = document.createElement('div');
+  row.className = 'bar-row';
+  row.style.setProperty('--c1', cat.colors[0]);
+  row.style.setProperty('--c2', cat.colors[1]);
+  row.style.setProperty('--w', `${cat.pct}%`);
+  row.style.setProperty('--i', i);
+
+  const head = document.createElement('div');
+  head.className = 'bar-head';
+  const label = document.createElement('span');
+  label.className = 'bar-label';
+  label.textContent = cat.label;
+  const pct = document.createElement('span');
+  pct.className = 'bar-pct';
+  pct.dataset.value = String(cat.pct);
+  pct.textContent = '0%';
+  head.append(label, pct);
+
+  const bar = document.createElement('div');
+  bar.className = 'bar';
+  bar.setAttribute('role', 'progressbar');
+  bar.setAttribute('aria-label', cat.label);
+  bar.setAttribute('aria-valuemin', '0');
+  bar.setAttribute('aria-valuemax', '100');
+  bar.setAttribute('aria-valuenow', String(cat.pct));
+  const fill = document.createElement('div');
+  fill.className = 'bar__fill';
+  bar.append(fill);
+
+  row.append(head, bar);
+  return row;
+}
+
+/* Dispara as animações da tela de resultado (barras, números e afirmações) */
+function animateResult() {
+  // Dois frames: garante que o navegador já desenhou o estado inicial
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      els.bars.querySelectorAll('.bar-row').forEach((row, i) => {
+        row.classList.add('is-in');
+        const pct = row.querySelector('.bar-pct');
+        countUp(pct, Number(pct.dataset.value), 1100, i * 90);
+      });
+      els.statements.classList.add('is-in');
+    })
+  );
+}
+
+/* Anima um número de 0% até o valor final */
+function countUp(el, target, duration, delay = 0) {
+  if (REDUCED_MOTION) {
+    el.textContent = `${target}%`;
+    return;
+  }
+  const begin = performance.now() + delay;
+  const tick = (now) => {
+    const t = Math.min(1, Math.max(0, (now - begin) / duration));
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = `${Math.round(target * eased)}%`;
+    if (t < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+
+/* =============================================================================
+   5. COMPARTILHAMENTO
+   ============================================================================= */
+
+/* Texto do resultado, pronto para compartilhar */
+function buildShareText(result, { includeUrl }) {
+  const lines = [
+    `${result.profile.icon} ${result.profile.name}`,
+    result.profile.tagline,
+    '',
+    'Meu perfil tecnológico:',
+    ...result.categories.map((c) => `• ${c.label}: ${c.pct}%`),
+  ];
+  if (includeUrl && isWebPage()) lines.push('', `Descubra o seu: ${location.href}`);
+  return lines.join('\n');
+}
+
+const isWebPage = () => /^https?:$/.test(location.protocol);
+
+/* Web Share API quando disponível; senão, copia o texto para a área de transferência */
+async function shareResult() {
+  if (!state.result) return;
+
+  if (typeof navigator.share === 'function') {
+    try {
+      await navigator.share({
+        title: CONFIG.shareTitle,
+        text: buildShareText(state.result, { includeUrl: false }),
+        ...(isWebPage() ? { url: location.href } : {}),
+      });
+      return;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return; // a pessoa fechou o menu de compartilhar
+      // qualquer outro erro: cai para o plano B (copiar)
+    }
+  }
+
+  const copied = await copyToClipboard(buildShareText(state.result, { includeUrl: true }));
+  showToast(copied ? 'Resultado copiado! Agora é só colar.' : 'Não foi possível copiar automaticamente.');
+}
+
+async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (_) { /* tenta o método antigo abaixo */ }
+
+  // Plano C (páginas abertas direto do arquivo, navegadores antigos)
+  try {
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+    document.body.appendChild(area);
+    area.select();
+    const ok = document.execCommand('copy');
+    area.remove();
+    return ok;
+  } catch (_) {
+    return false;
+  }
+}
+
+function showToast(message) {
+  els.toast.textContent = message;
+  els.toast.classList.add('is-show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => els.toast.classList.remove('is-show'), 2600);
+}
+
+
+/* =============================================================================
+   6. INICIALIZAÇÃO
+   ============================================================================= */
+function init() {
+  validateData();
+
+  const $ = (id) => document.getElementById(id);
+  els = {
+    screens: {
+      intro: $('screen-intro'),
+      quiz: $('screen-quiz'),
+      loading: $('screen-loading'),
+      result: $('screen-result'),
+    },
+    introCount: $('intro-count'),
+    start: $('btn-start'),
+    back: $('btn-back'),
+    count: $('q-count'),
+    percent: $('q-percent'),
+    progress: $('progress'),
+    progressFill: $('progress-fill'),
+    card: $('q-card'),
+    topic: $('q-topic'),
+    title: $('q-title'),
+    options: $('q-options'),
+    steps: $('analysis-steps'),
+    analysisFill: $('analysis-fill'),
+    resultIcon: $('result-icon'),
+    resultName: $('result-name'),
+    resultTagline: $('result-tagline'),
+    resultDesc: $('result-desc'),
+    resultSecondary: $('result-secondary'),
+    bars: $('result-bars'),
+    statements: $('result-statements'),
+    share: $('btn-share'),
+    restart: $('btn-restart'),
+    toast: $('toast'),
+  };
+
+  els.introCount.textContent = `${QUESTIONS.length} perguntas`;
+
+  els.start.addEventListener('click', startQuiz);
+  els.back.addEventListener('click', goBack);
+  els.share.addEventListener('click', shareResult);
+  els.restart.addEventListener('click', startQuiz);
+  document.addEventListener('keydown', handleKeydown);
+}
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+}
+
+/* Exportação opcional para testes automatizados em Node (ignorada no navegador) */
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { QUESTIONS, PROFILES, CATEGORIES, MAX_SCORES, computeResult };
+}
+</script>
+</body>
+</html>
